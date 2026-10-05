@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>TikTok Trust Check</title>
+<style>
+:root{--bg:#f3f4f6;--panel:#fff;--ink:#1a1f2b;--mut:#5f6877;--line:#dde1e7;--cold:#3a7bc8;--warm:#e58e26;--hot:#c9573a;--ok:#1b9a82;--field:#f8f9fb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--panel:#1a1e27;--ink:#eceff4;--mut:#9aa3b2;--line:#2b313d;--cold:#5b9be0;--warm:#f0a143;--hot:#e0725a;--ok:#35c2a8;--field:#141821}}
+:root[data-theme="dark"]{--bg:#12151c;--panel:#1a1e27;--ink:#eceff4;--mut:#9aa3b2;--line:#2b313d;--cold:#5b9be0;--warm:#f0a143;--hot:#e0725a;--ok:#35c2a8;--field:#141821}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 18px 48px}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 22px;max-width:62ch}
+.grid{display:grid;gap:22px;grid-template-columns:1fr}
+@media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}.result{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+fieldset{border:0;border-top:1px solid var(--line);margin:18px 0 0;padding:14px 0 0}
+fieldset:first-of-type{border-top:0;margin-top:0;padding-top:0}
+legend{font-weight:650;padding:0;margin-bottom:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+label{display:block;font-size:13px;color:var(--mut)}
+input[type=text],input[type=number],select{width:100%;margin-top:4px;padding:9px 10px;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--cold);outline-offset:1px}
+.linkrow{display:flex;gap:8px;margin-top:4px}
+.linkrow input{margin:0}
+button{font:inherit;font-weight:600;color:#fff;background:var(--ink);border:0;border-radius:8px;padding:9px 16px;cursor:pointer}
+:root[data-theme="dark"] button{color:#12151c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button{color:#12151c}}
+.chip{font-size:13px;margin:7px 0 0;color:var(--mut);min-height:20px}
+.chip b{color:var(--ink)}
+.checks{display:grid;gap:7px}
+.checks label{display:flex;gap:9px;align-items:center;color:var(--ink);font-size:14px}
+.checks input{width:17px;height:17px;margin:0}
+.hint{font-size:12.5px;color:var(--mut);margin:6px 0 0}
+/* result */
+.big{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.pct{font-size:58px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.pct small{font-size:26px;font-weight:700}
+.stat{font-size:18px;font-weight:700}
+.state{color:var(--mut);margin:4px 0 0}
+.therm{margin:20px 0 6px;position:relative;height:16px;border-radius:8px;overflow:hidden;display:flex;background:var(--line)}
+.therm i{display:block;height:100%}
+.pin{position:relative;height:22px;margin-bottom:2px}
+.pin span{position:absolute;top:0;width:0;height:0;border:7px solid transparent;border-bottom:9px solid var(--ink);border-top:0;transform:translateX(-7px)}
+.zones{display:flex;font-size:12px;color:var(--mut)}
+.eta{margin:20px 0 0;padding:14px 16px;border-radius:10px;background:var(--field);border:1px solid var(--line)}
+.eta strong{font-size:22px;display:block;line-height:1.2}
+.eta p{margin:6px 0 0;color:var(--mut);font-size:13.5px}
+h2{font-size:15px;margin:22px 0 10px}
+.f{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-bottom:11px}
+.f .n{font-weight:600}
+.f .p{color:var(--mut);font-size:13px}
+.f .bar{grid-column:1/-1;height:7px;border-radius:4px;background:var(--line);overflow:hidden}
+.f .bar i{display:block;height:100%;border-radius:4px}
+.f .why{grid-column:1/-1;font-size:12.5px;color:var(--mut)}
+ol{margin:0;padding-left:20px}
+ol li{margin:0 0 7px}
+.foot{font-size:12.5px;color:var(--mut);margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel);flex:none}
+.lang button.l{background:transparent;color:var(--mut);border-radius:0;padding:6px 13px;font-size:13px}
+.lang button.l[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+textarea{width:100%;margin-top:4px;padding:9px 10px;font:12.5px/1.4 system-ui,sans-serif;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;resize:vertical}
+textarea:focus-visible{outline:2px solid var(--cold);outline-offset:1px}
+.steps{font-size:14px}
+.bm{display:inline-block;padding:3px 10px;border:1px dashed var(--mut);border-radius:6px;color:var(--ink);text-decoration:none;font-weight:600;cursor:grab}
+.steps button.alt{padding:3px 10px;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line)}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mut);margin-top:6px}
+.chk input{width:16px;height:16px;margin:0}
+.saverow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.saverow .chip{margin:0}
+.cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--field)}
+.ch{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ch span,.cn{font-size:12.5px;color:var(--mut)}
+.cs{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:6px 0 2px}
+.cp{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.mini{display:flex;gap:4px;align-items:flex-end;height:28px;margin:8px 0}
+.mini span{flex:1;border-radius:2px}
+.cb{display:flex;gap:8px;margin-top:10px}
+.cb button{padding:5px 12px;font-size:13px}
+.cb button.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><h1>TikTok trust check</h1><div class="lang" role="group" aria-label="Language"><button type="button" class="l" data-l="en">EN</button><button type="button" class="l" data-l="ru">RU</button></div></div>
+<p class="sub">Paste an account link, add the numbers visible on its profile, and get a trust score, a warm-up status, and a projection of how many days of warming up are left.</p>
+
+<div class="grid">
+<section class="panel" aria-label="Account details">
+  <fieldset>
+    <legend>Account link</legend>
+    <div class="linkrow"><input type="text" id="link" placeholder="https://www.tiktok.com/@username" autocomplete="off" inputmode="url"><button id="go" type="button">Analyze</button></div>
+    <p class="chip" id="chip"></p>
+    <p class="hint">TikTok blocks automated reads from a web page, so the link supplies the username and the profile numbers below are entered by hand.</p>
+  </fieldset>
+  <fieldset>
+    <legend>Import from your profile</legend>
+    <p class="hint" style="margin:0 0 8px">Reads the public numbers from a profile page you have open in a desktop browser, so you do not have to type them in.</p>
+    <p class="hint" id="tgNote" hidden>Inside Telegram the bookmark cannot run. Use it in your regular browser (Chrome or Safari), copy the result, then paste it here.</p>
+    <ol class="steps">
+      <li>Drag this to your bookmarks bar, or copy its code: <a id="bm" class="bm" href="#">Read TikTok profile</a> <button type="button" class="alt" id="bmCopy">Copy code</button></li>
+      <li>Open your profile on tiktok.com and click the bookmark.</li>
+      <li>Paste the result below and import.</li>
+    </ol>
+    <textarea id="paste" rows="3" placeholder='{"v":1,"handle":"..."}' spellcheck="false"></textarea>
+    <div class="linkrow"><button id="imp" type="button">Import numbers</button></div>
+    <p class="chip" id="impMsg"></p>
+  </fieldset>
+  <fieldset>
+    <legend>Profile numbers</legend>
+    <div class="row">
+      <label>Account age (days)<input type="number" id="age" min="0" value="14"></label>
+      <label>Videos posted (total)<input type="number" id="posts" min="0" value="6"></label>
+      <label>Days posted in last 14<input type="number" id="a14" min="0" max="14" value="4"></label>
+      <label>Followers<input type="number" id="fol" min="0" value="85"></label>
+      <label>Following<input type="number" id="fing" min="0" value="120"></label>
+      <label>Avg views, last 10 videos<input type="number" id="views" min="0" value="240"></label>
+      <label>Avg likes, last 10 videos<input type="number" id="likes" min="0" value="9"></label>
+      <label>Account standing
+        <select id="std"><option value="clean">Clean, no issues</option><option value="removed">1–2 videos removed</option><option value="strikes">Warnings or strikes</option><option value="restricted">Features restricted / not eligible for For You</option></select>
+      </label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Profile setup</legend>
+    <div class="checks">
+      <label><input type="checkbox" id="p_avatar" checked> Real profile photo</label>
+      <label><input type="checkbox" id="p_bio" checked> Bio filled in</label>
+      <label><input type="checkbox" id="p_name"> Custom display name</label>
+      <label><input type="checkbox" id="p_contact"> Phone or email verified</label>
+      <label><input type="checkbox" id="p_handle" checked> Chosen username (not an auto-generated one)</label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Goal</legend>
+    <label>Warm-up target
+      <select id="target"><option value="55">55% – usable, still building</option><option value="75" selected>75% – fully warmed</option><option value="85">85% – high trust</option></select>
+    </label>
+  </fieldset>
+</section>
+
+<section class="panel result" id="result" aria-live="polite">
+  <div class="big"><div class="pct"><span id="pct">0</span><small>%</small></div><div><div class="stat" id="stat"></div><div class="state" id="state"></div></div></div>
+  <div class="therm" id="therm"></div>
+  <div class="pin"><span id="pin"></span></div>
+  <div class="zones" id="zones"></div>
+  <div class="eta"><strong id="eta"></strong><p id="etaNote"></p></div>
+  <h2>What the score is made of</h2>
+  <div id="factors"></div>
+  <div id="vidsec" hidden>
+    <h2>Recent video views</h2>
+    <div id="vidchart"></div>
+    <p class="hint" id="vidnote"></p>
+    <label class="chk"><input type="checkbox" id="useFlat" checked> Use this pattern in the standing score</label>
+  </div>
+  <h2>Do next, biggest gain first</h2>
+  <ol id="todo"></ol>
+  <div class="saverow"><button id="save" type="button">Save to history</button><span class="chip" id="saveMsg"></span></div>
+  <p class="foot" id="foot"></p>
+</section>
+</div>
+<section class="panel" id="hist" style="margin-top:22px">
+  <h2 style="margin-top:0">Your accounts</h2>
+  <div class="cards" id="cards"></div>
+  <p class="hint" id="histNote"></p>
+</section>
+</div>
+
+<script>
+const TG=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)?Telegram.WebApp:null;
+if(TG){try{TG.ready();TG.expand();document.documentElement.dataset.theme=TG.colorScheme||'dark'}catch(e){}}
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const W={age:15,act:20,prof:15,eng:20,aud:10,std:20};
+const STD={clean:[1,100],removed:[.6,100],strikes:[.25,60],restricted:[.05,40]};
+const PW={avatar:3,bio:3,name:2,contact:4,handle:3};
+const ZONES=[[0,35,'Cold','--cold'],[35,55,'Warming up','--warm'],[55,75,'Nearly warm','--hot'],[75,100,'Warmed','--ok']];
+const col=p=>{for(const z of ZONES) if(p<z[1]) return z; return ZONES[3];};
+
+function read(){
+  const n=id=>Math.max(0,+$(id).value||0);
+  return {age:n('age'),posts:n('posts'),a14:clamp(n('a14'),0,14),fol:n('fol'),fing:n('fing'),views:n('views'),likes:n('likes'),std:$('std').value,flag:$('useFlat').checked?curFlag:0,
+    prof:{avatar:$('p_avatar').checked,bio:$('p_bio').checked,name:$('p_name').checked,contact:$('p_contact').checked,handle:$('p_handle').checked}};
+}
+function calc(s){
+  const age=1-Math.exp(-s.age/30);
+  const act=.6*clamp(s.a14/10)+.4*clamp(s.posts/30);
+  let pp=0;for(const k in PW) if(s.prof[k]) pp+=PW[k];
+  const prof=pp/15;
+  const rate=s.views>0?s.likes/s.views:0;
+  const reach=clamp(Math.log10(s.views+1)/3);
+  const eng=s.posts>0?.5*clamp(rate/.05)+.5*reach:0;
+  const ff=s.fing/Math.max(s.fol,1);
+  const ratio=ff<=1?1:clamp(1-Math.log10(ff));
+  const vf=s.fol>0?s.views/s.fol:0;
+  const aud=(s.fol+s.fing===0)?.5:(s.fol>=200?.5*ratio+.5*clamp(vf/.1):ratio);
+  const [sm,cap]=STD[s.std];
+  const f={age,act,prof,eng,aud,std:sm*[1,.75,.4][s.flag||0]};
+  let raw=0;for(const k in W) raw+=W[k]*f[k];
+  return {f,raw,total:Math.min(raw,cap),cap,rate,ff,vf,pp};
+}
+function project(s,target){
+  const all={avatar:1,bio:1,name:1,contact:1,handle:1};
+  const at=t=>calc({...s,prof:all,age:s.age+t,posts:s.posts+t,a14:Math.min(14,s.a14+t)});
+  for(let t=0;t<=150;t++){ if(at(t).total>=target) return {days:t,end:at(t)}; }
+  return {days:null,end:at(150)};
+}
+let lang=((TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user&&TG.initDataUnsafe.user.language_code)||navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';
+const L=(e,r)=>lang==='ru'?r:e;
+const fmt=x=>Math.round(x);
+const num=(x,d)=>{const v=x.toFixed(d);return lang==='ru'?v.replace('.',','):v};
+const plRu=(n,a)=>{const m=n%100,k=n%10;return m>10&&m<15?a[2]:k===1?a[0]:k>1&&k<5?a[1]:a[2]};
+const zname=z=>L(z[2],['Холодный','Идёт прогрев','Почти прогрет','Прогрет'][ZONES.indexOf(z)]);
+const ZS=[['Treat it as a fresh account: little history for TikTok to trust.','Считайте аккаунт новым: у TikTok мало истории, чтобы ему доверять.'],['Signals are building but still thin.','Сигналы накапливаются, но их пока мало.'],['Close. A few signals still hold it back.','Уже близко. Несколько сигналов всё ещё тянут вниз.'],['Established and behaving like a normal active account.','Устоявшийся аккаунт, который ведёт себя как обычный активный.']];
+function render(){
+  analyzeViews();
+  const s=read(), c=calc(s), target=+$('target').value, p=c.total, z=col(p), zi=ZONES.indexOf(z);
+  $('pct').textContent=fmt(p);
+  $('pct').style.color=`var(${z[3]})`;
+  $('stat').textContent=zname(z);
+  $('state').textContent=L(ZS[zi][0],ZS[zi][1]);
+  $('therm').innerHTML=ZONES.map(a=>`<i style="width:${a[1]-a[0]}%;background:var(${a[3]});opacity:${p>=a[0]?1:.28}"></i>`).join('');
+  $('pin').style.left=p+'%';
+  $('zones').innerHTML=ZONES.map(a=>`<span style="width:${a[1]-a[0]}%">${zname(a)}</span>`).join('');
+
+  const pr=project(s,target);
+  if(p>=target){
+    $('eta').textContent=L('Already at your target','Цель уже достигнута');
+    $('etaNote').textContent=L(`Score ${fmt(p)}% meets the ${target}% goal. Keep posting regularly to hold it.`,`Оценка ${fmt(p)}% достигает цели ${target}%. Публикуйте регулярно, чтобы удержать результат.`);
+  } else if(pr.days===0){
+    $('eta').textContent=L('Finish the profile today and you are there','Заполните профиль сегодня — и цель достигнута');
+    $('etaNote').textContent=L(`Completing the missing profile items alone reaches ${target}%.`,`Одно заполнение недостающих пунктов профиля даёт ${target}%.`);
+  } else if(pr.days!==null){
+    const n=pr.days, d=new Date(Date.now()+n*864e5).toLocaleDateString(L('en-GB','ru-RU'),{day:'numeric',month:'short'});
+    $('eta').textContent=L(`About ${n} more day${n===1?'':'s'} of warming up`,`Ещё около ${n} ${plRu(n,['день','дня','дней'])} прогрева`);
+    $('etaNote').textContent=L(`Reaches ${target}% around ${d}. Projection: one video a day, missing profile items completed today, engagement and standing unchanged.`,`Достигнет ${target}% примерно ${d}. Прогноз: одно видео в день, недостающие пункты профиля заполнены сегодня, вовлечённость и статус без изменений.`);
+  } else {
+    const lost=Object.keys(W).map(k=>[k,W[k]*(1-pr.end.f[k])]).sort((a,b)=>b[1]-a[1])[0][0];
+    const nm=L(...{age:['account age','возраст аккаунта'],act:['activity','активность'],prof:['profile','профиль'],eng:['engagement','вовлечённость'],aud:['audience quality','качество аудитории'],std:['account standing','статус аккаунта']}[lost]);
+    const cp=pr.end.cap<100;
+    $('eta').textContent=L('Time alone will not get there','Одного времени не хватит');
+    $('etaNote').textContent=L(`Posting daily for 150 days tops out near ${fmt(pr.end.total)}%${cp?` (standing caps it at ${pr.end.cap}%)`:''}. Biggest blocker: ${nm}. Improve that, then re-run.`,`Ежедневные публикации в течение 150 дней дают максимум около ${fmt(pr.end.total)}%${cp?` (статус ограничивает итог до ${pr.end.cap}%)`:''}. Главный тормоз: ${nm}. Улучшите его и запустите проверку снова.`);
+  }
+
+  const rate=num(c.rate*100,1), ffs=num(c.ff,1), vfp=fmt(c.vf*100);
+  const rows=[
+    ['age',L('Account age','Возраст аккаунта'),L(`${s.age} days. Trust builds fast early, then flattens: about 63% at 30 days, 90% at 70.`,`${s.age} дн. Доверие быстро растёт в начале, затем выходит на плато: около 63% к 30-му дню и 90% к 70-му.`)],
+    ['act',L('Posting activity','Активность публикаций'),L(`${s.a14} of the last 14 days posted, ${s.posts} videos total. Full marks at 10 active days and 30 videos.`,`Публикации в ${s.a14} из последних 14 дней, всего видео: ${s.posts}. Максимум даёт 10 активных дней и 30 видео.`)],
+    ['prof',L('Profile setup','Оформление профиля'),L(`${c.pp} of 15 points from profile items.`,`${c.pp} из 15 баллов за оформление профиля.`)],
+    ['eng',L('Engagement','Вовлечённость'),s.posts?L(`Like rate ${rate}% (healthy: 5% or more), average ${s.views} views per video.`,`Доля лайков ${rate}% (норма: 5% и выше), в среднем ${s.views} просмотров на видео.`):L('No videos yet, so no engagement to measure.','Видео пока нет, поэтому вовлечённость измерить нельзя.')],
+    ['aud',L('Audience quality','Качество аудитории'),L(`Following ${ffs}x your follower count${s.fol>=200?`, videos reach ${vfp}% of followers (healthy: 10% or more)`:''}.`,`Соотношение подписок к подписчикам: ${ffs}×${s.fol>=200?`, видео доходят до ${vfp}% подписчиков (норма: 10% и выше)`:''}.`)],
+    ['std',L('Account standing','Статус аккаунта'),L(...{clean:['No removals or warnings.','Нет удалённых видео и предупреждений.'],removed:['Removed videos lower trust.','Удалённые видео снижают доверие.'],strikes:['Strikes cap the total at 60%.','Страйки ограничивают итог на уровне 60%.'],restricted:['Restrictions cap the total at 40%.','Ограничения не дают итогу превысить 40%.']}[s.std])]
+  ];
+  if(s.flag)rows[5][2]+=' '+L(`Pattern in video views lowered it (${s.flag===2?'-60%':'-25%'}).`,`Картина просмотров снизила его (${s.flag===2?'-60%':'-25%'}).`);
+  $('factors').innerHTML=rows.map(r=>{const v=c.f[r[0]],pts=W[r[0]]*v,zz=col(v*100);
+    return `<div class="f"><span class="n">${r[1]}</span><span class="p">${num(pts,1)} / ${W[r[0]]}</span><div class="bar"><i style="width:${v*100}%;background:var(${zz[3]})"></i></div><span class="why">${r[2]}</span></div>`}).join('');
+
+  const need=Math.max(0,10-s.a14), left=Math.max(0,30-s.posts);
+  const miss=Object.keys(PW).filter(k=>!s.prof[k]).map(k=>L(...{avatar:['profile photo','фото профиля'],bio:['bio','описание'],name:['display name','отображаемое имя'],contact:['phone/email verification','подтверждение телефона или почты'],handle:['a chosen username','собственный username']}[k]));
+  const acts=[
+    ['age',c.f.age,L(`Give it time: the age signal reaches about 90% near day 70 (${Math.max(0,70-s.age)} days from now). It cannot be rushed.`,`Дайте время: сигнал возраста достигает примерно 90% к 70-му дню (ещё ${Math.max(0,70-s.age)} дн.). Ускорить это нельзя.`)],
+    ['act',c.f.act,L(`Post on ${need||'a few'} more of the next 14 days and work toward 30 total videos (${left} to go).`,need?`Публикуйте ещё в ${need} из ближайших 14 дней и двигайтесь к 30 видео всего (осталось ${left}).`:`Публикуйте регулярно и двигайтесь к 30 видео всего (осталось ${left}).`)],
+    ['prof',c.f.prof,miss.length?L(`Finish the profile: ${miss.join(', ')}.`,`Завершите профиль: ${miss.join(', ')}.`):''],
+    ['eng',c.f.eng,c.rate<.03&&s.posts?L(`Like rate is ${rate}%. Stronger hooks in the first two seconds and a single clear niche lift it.`,`Доля лайков — ${rate}%. Её поднимают сильный крючок в первые две секунды и одна чёткая ниша.`):L(`Average reach is ${s.views} views. Consistent posting in one niche builds it.`,`Средний охват — ${s.views} просмотров. Его наращивает регулярный постинг в одной нише.`)],
+    ['aud',c.f.aud,c.ff>3?L(`You follow ${s.fing} accounts against ${s.fol} followers. Stop mass-following and keep the ratio near 1x.`,`Вы подписаны на ${s.fing} аккаунтов при ${s.fol} подписчиках. Прекратите массфолловинг и держите соотношение около 1×.`):L(`Followers rarely watch (${vfp}% reach). Inactive or bought followers drag trust down.`,`Подписчики редко смотрят видео (охват ${vfp}%). Неактивные или купленные подписчики снижают траст.`)],
+    ['std',c.f.std,s.std==='clean'?(s.flag?L('Reach looks restricted: post original, non-recycled videos for a week, then re-check.','Охват выглядит ограниченным: неделю публикуйте оригинальные, не переиспользованные видео, затем проверьте снова.'):''):L('Avoid re-uploading removed content and avoid new violations while standing recovers.','Не загружайте повторно удалённый контент и избегайте новых нарушений, пока статус восстанавливается.')]
+  ].map(a=>({k:a[0],lost:W[a[0]]*(1-a[1]),t:a[2]})).filter(a=>a.lost>.5&&a.t).sort((a,b)=>b.lost-a.lost).slice(0,4);
+  $('todo').innerHTML=acts.length?acts.map(a=>`<li>${a.t} <span style="color:var(--mut)">${L(`(up to +${fmt(a.lost)} points)`,`(до +${fmt(a.lost)} баллов)`)}</span></li>`).join(''):`<li>${L('Nothing significant is holding this account back.','Ничего существенного не мешает этому аккаунту.')}</li>`;
+  $('foot').textContent=L('The score is a weighted model: age 15, activity 20, profile 15, engagement 20, audience 10, standing 20 points, with standing able to cap the total. It estimates account health from public signals and is not a number TikTok publishes.','Оценка — взвешенная модель: возраст 15, активность 20, профиль 15, вовлечённость 20, аудитория 10, статус 20 баллов; статус может ограничить итог сверху. Это оценка состояния аккаунта по публичным признакам, а не число, которое публикует TikTok.');
+  drawVids();
+}
+
+let handleTouched=false;
+$('p_handle').addEventListener('change',()=>handleTouched=true);
+function parseLink(){
+  const v=$('link').value.trim(), chip=$('chip');
+  if(!v){chip.textContent='';return;}
+  const m=v.match(/@([A-Za-z0-9._]{2,24})/);
+  if(m){
+    const h=m[1], auto=/^user\d{6,}$/i.test(h)||/\d{9,}$/.test(h);
+    chip.innerHTML=L(`Username <b>@${h}</b> ${auto?'looks auto-generated (long digit suffix).':'looks chosen by the owner.'}`,`Имя <b>@${h}</b> ${auto?'похоже на сгенерированное автоматически (длинный числовой хвост).':'похоже на выбранное владельцем.'}`);
+    if(!handleTouched) $('p_handle').checked=!auto;
+  } else if(/tiktok\.com/i.test(v)){
+    chip.textContent=L('Short or share link: open it, copy the full profile URL with @username, and paste that instead.','Короткая ссылка: откройте её, скопируйте полный адрес профиля с @username и вставьте его.');
+  } else chip.textContent=L('That does not look like a TikTok link. Expected tiktok.com/@username.','Это не похоже на ссылку TikTok. Ожидается tiktok.com/@username.');
+}
+$('link').addEventListener('input',()=>{parseLink();render();});
+$('go').addEventListener('click',()=>{parseLink();render();$('result').scrollIntoView({behavior:'smooth',block:'start'});});
+document.querySelectorAll('input[type=number],select,input[type=checkbox]').forEach(e=>e.addEventListener('input',render));
+function bmFn(M){
+  try{
+    const num=t=>{const s=String(t).trim().toLowerCase().replace(/\s|\u00a0/g,'');const m=s.match(/^([\d.,]+)(k|m|b|тыс|млн|млрд)?/);if(!m)return null;const mul={k:1e3,m:1e6,b:1e9,'тыс':1e3,'млн':1e6,'млрд':1e9}[m[2]]||1;return Math.round(parseFloat(m[2]?m[1].replace(',','.'):m[1].replace(/[,.]/g,''))*mul)};
+    const nn=(a,b)=>{const x=a??b;return x==null||x===''?null:Number(x)};
+    const tx=q=>{const e=document.querySelector(q);return e?num(e.textContent):null};
+    let d={};
+    try{d=JSON.parse(document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__').textContent).__DEFAULT_SCOPE__['webapp.user-detail'].userInfo||{}}catch(e){}
+    const U=d.user||{},S=d.stats||{},S2=d.statsV2||{};
+    const pg=(location.pathname.match(/@([\w.]+)/)||[])[1]||null;
+    if(pg&&U.uniqueId&&U.uniqueId.toLowerCase()!==pg.toLowerCase()){alert(M[3].replace('%1','@'+U.uniqueId).replace('%2','@'+pg));return}
+    const o={v:1,handle:U.uniqueId||((location.pathname.match(/@([\w.]+)/)||[])[1])||null};
+    o.followers=nn(S.followerCount,S2.followerCount)??tx('[data-e2e="followers-count"]');
+    o.following=nn(S.followingCount,S2.followingCount)??tx('[data-e2e="following-count"]');
+    o.likes=nn(S.heartCount,S2.heartCount)??tx('[data-e2e="likes-count"]');
+    o.videos=nn(S.videoCount,S2.videoCount);
+    o.bio=U.signature!=null?!!String(U.signature).trim():null;
+    o.nameSet=U.nickname?U.nickname!==U.uniqueId:null;
+    o.ct=nn(U.createTime);o.uid=U.id||null;
+    const seen={};o.vids=[];
+    document.querySelectorAll('a[href*="/video/"]').forEach(a=>{
+      const m=a.href.match(/\/video\/(\d+)/);if(!m||seen[m[1]])return;
+      if(o.handle&&!a.href.toLowerCase().includes('/@'+o.handle.toLowerCase()+'/'))return;
+      seen[m[1]]=1;
+      const t=a.closest('[data-e2e="user-post-item"]')||a.parentElement;
+      const v=t.querySelector('[data-e2e="video-views"]')||t.querySelector('strong');
+      o.vids.push([m[1],v?num(v.textContent):null,t.querySelector('[data-e2e="video-card-badge"]')?1:0]);
+    });
+    if(o.followers==null&&!o.vids.length){alert(M[2]);return}
+    const json=JSON.stringify(o),fb=()=>prompt(M[1],json);
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(json).then(()=>alert(M[0]),fb);else fb();
+  }catch(e){alert(String(e))}
+}
+function bookmarkUrl(){
+  const M=[L('Copied. Paste it into the trust check app.','Скопировано. Вставьте это в приложение проверки траста.'),L('Copy this text and paste it into the trust check app:','Скопируйте этот текст и вставьте в приложение проверки траста:'),L('Open a profile page first (tiktok.com/@username), then click this bookmark.','Сначала откройте страницу профиля (tiktok.com/@username), затем нажмите эту закладку.'),L('This page still holds data of %1 from the previous profile. Press F5 to reload the page for %2, then click the bookmark again.','Эта страница всё ещё хранит данные профиля %1. Нажмите F5, чтобы перезагрузить страницу %2, затем снова нажмите закладку.')];
+  return 'javascript:'+encodeURIComponent('('+bmFn.toString()+')('+JSON.stringify(M)+')');
+}
+let impHandle=null;
+function doImport(){
+  const msg=t=>{$('impMsg').textContent=t};
+  if(!$('paste').value.trim()){msg(L('Paste the data from the bookmark first.','Сначала вставьте данные из закладки.'));return}
+  let o;try{o=JSON.parse($('paste').value.trim())}catch(e){o=null}
+  if(!o||o.v!==1){msg(L('That is not data from the bookmark. Open your profile, click the bookmark and paste the result again.','Это не данные из закладки. Откройте свой профиль, нажмите закладку и вставьте результат снова.'));return}
+  const got=[],est=[],now=Date.now();
+  ['age','posts','a14','fol','fing','views','likes'].forEach(id=>{$(id).value=''});
+  if(impHandle&&o.handle&&impHandle.toLowerCase()!==o.handle.toLowerCase()){
+    $('std').value='clean';['p_avatar','p_bio','p_name','p_contact'].forEach(id=>{$(id).checked=false});handleTouched=false;
+  }
+  impHandle=o.handle||impHandle;
+  const set=(id,v)=>{if(v==null||!isFinite(v))return false;$(id).value=Math.max(0,Math.round(v));return true};
+  const ts=id=>{try{const t=Number(BigInt(id)>>32n)*1000;return t>1472688000000&&t<now+864e5?t:null}catch(e){return null}};
+  if(set('fol',o.followers))got.push(L('followers','подписчики'));
+  if(set('fing',o.following))got.push(L('following','подписки'));
+  if(set('posts',o.videos))got.push(L('videos','видео'));
+  const vids=(o.vids||[]).map(v=>({t:ts(v[0]),views:v[1],pin:v[2]}));
+  VID=vids;
+  const recent=vids.filter(v=>!v.pin&&v.views!=null).slice(0,10);
+  let avgV=null;
+  if(recent.length){avgV=recent.reduce((a,v)=>a+v.views,0)/recent.length;set('views',avgV);got.push(L('average views','средние просмотры'))}
+  if(avgV!=null&&o.likes!=null&&o.videos>0){set('likes',o.likes/o.videos);est.push(L('average likes (total likes ÷ videos)','средние лайки (все лайки ÷ видео)'))}
+  if(vids.length){const days=new Set(vids.filter(v=>v.t&&v.t>=now-14*864e5).map(v=>new Date(v.t).toDateString()));set('a14',days.size);got.push(L('days posted','дни с публикациями'))}
+  if(o.ct>0){set('age',(now-o.ct*1000)/864e5);got.push(L('account age','возраст аккаунта'))}
+  else{
+    const u=o.uid?ts(o.uid):null, old=Math.min(...vids.map(v=>v.t).filter(Boolean));
+    if(u){set('age',(now-u)/864e5);est.push(L('account age (from user ID)','возраст аккаунта (по ID пользователя)'))}
+    else if(isFinite(old)){set('age',(now-old)/864e5);est.push(L('account age (at least: oldest loaded video)','возраст аккаунта (минимум: самое старое загруженное видео)'))}
+  }
+  if(o.bio!=null){$('p_bio').checked=!!o.bio;got.push(L('bio','описание'))}
+  if(o.nameSet!=null){$('p_name').checked=!!o.nameSet;got.push(L('display name','отображаемое имя'))}
+  if(o.handle&&/^[\w.]{2,24}$/.test(o.handle))$('link').value='https://www.tiktok.com/@'+o.handle;
+  parseLink();
+  msg(L(`${o.handle?'@'+o.handle+'. ':''}Filled: ${got.join(', ')||'nothing'}.${est.length?` Estimated: ${est.join(', ')}.`:''} Still yours to set: real photo, phone/email, account standing.`,`${o.handle?'@'+o.handle+'. ':''}Заполнено: ${got.join(', ')||'ничего'}.${est.length?` Оценено: ${est.join(', ')}.`:''} Остаётся задать вам: настоящее фото, телефон/почта, статус аккаунта.`));
+  $('paste').value='';
+  render();
+}
+$('imp').addEventListener('click',doImport);
+$('bm').addEventListener('click',e=>{e.preventDefault();$('impMsg').textContent=L('Do not click it here: drag it to your bookmarks bar, then click it on your profile page.','Не нажимайте её здесь: перетащите на панель закладок, затем нажмите на странице своего профиля.')});
+$('bmCopy').addEventListener('click',()=>{
+  const ok=()=>{$('impMsg').textContent=L('Code copied. Make a new bookmark and paste it as the address.','Код скопирован. Создайте новую закладку и вставьте его в поле адреса.')};
+  const no=()=>{$('impMsg').textContent=L('Copying is blocked here. Drag the button to the bookmarks bar instead.','Копирование здесь заблокировано. Перетащите кнопку на панель закладок.')};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(bookmarkUrl()).then(ok,no);else no();
+});
+let VID=[],curFlag=0,VA=null,HIST=[],ST={mode:'local'};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const FN={age:['Age','Возраст'],act:['Activity','Активность'],prof:['Profile','Профиль'],eng:['Engagement','Вовлечённость'],aud:['Audience','Аудитория'],std:['Standing','Статус']};
+function analyzeViews(){
+  const x=VID.filter(v=>!v.pin&&v.views!=null).slice(0,20).map(v=>v.views).reverse();
+  const n=x.length;VA={x,n,flag:0,notes:[],M:0};curFlag=0;
+  if(n<6)return;
+  const med=a=>{const b=[...a].sort((p,q)=>p-q),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2};
+  const M=Math.round(med(x)),mx=Math.max(...x),fol=+$('fol').value||0,h=n>>1;
+  const rec=Math.round(med(x.slice(-h))),old=Math.round(med(x.slice(0,h)));
+  const flat=mx<=2*Math.max(M,1),low=M<(fol>=200?.05*fol:100),drop=old>=100&&rec<=.35*old,vl=x.filter(a=>a<50).length,veryLow=vl/n>=.6;
+  VA.M=M;VA.flag=((flat&&low)||veryLow||(drop&&low))?2:(drop||low)?1:0;
+  const N=VA.notes;
+  if(flat&&(low||veryLow))N.push(L(`Videos sit in a narrow band (best ${mx} vs median ${M}): nothing breaks out.`,`Видео держатся в узком коридоре (лучшее ${mx} при медиане ${M}): ни одно не вырывается.`));
+  if(low)N.push(fol>=200?L(`Median ${M} views is under 5% of your ${fol} followers.`,`Медиана ${M} просмотров — меньше 5% от ${fol} подписчиков.`):L(`Median ${M} views is under 100.`,`Медиана ${M} просмотров — меньше 100.`));
+  if(drop)N.push(L(`Newest videos have a median of ${rec} against ${old} before: down ${Math.round(100-100*rec/old)}%.`,`Медиана новых видео — ${rec} против ${old} ранее: падение на ${Math.round(100-100*rec/old)}%.`));
+  if(veryLow)N.push(L(`${vl} of ${n} videos have under 50 views.`,`У ${vl} из ${n} видео меньше 50 просмотров.`));
+  if(!VA.flag)N.push(L(`No restriction pattern: reach varies and holds up (median ${M}).`,`Признаков ограничения нет: охват колеблется и держится (медиана ${M}).`));
+  curFlag=VA.flag;
+}
+function drawVids(){
+  const A=VA,sec=$('vidsec');
+  if(!A||!A.n){sec.hidden=true;return}
+  sec.hidden=false;
+  if(A.n<6){$('vidchart').innerHTML='';$('vidnote').textContent=L(`Only ${A.n} video${A.n===1?'':'s'} with view counts. Pattern checks need at least 6.`,`Просмотры известны только у ${A.n} видео. Для анализа нужно минимум 6.`);return}
+  const W=300,H=100,P=8,B=H-14,T=14,mx=Math.max(...A.x,1),bw=Math.max(4,Math.min(16,(W-2*P)/A.n-3));
+  const X=i=>P+bw/2+(W-2*P-bw)*(A.n===1?.5:i/(A.n-1)),Y=v=>B-(B-T)*v/mx,f1=v=>v.toFixed(1);
+  let g=A.x.map((v,i)=>`<rect x="${f1(X(i)-bw/2)}" y="${f1(Y(v))}" width="${f1(bw)}" height="${f1(B-Y(v))}" rx="2" style="fill:var(${v<.35*A.M?'--hot':'--cold'})"/>`).join('');
+  const tx=(x,y,a,t)=>`<text x="${x}" y="${y}" text-anchor="${a}" font-size="9" style="fill:var(--mut)">${t}</text>`;
+  g+=`<line x1="${P}" x2="${W-P}" y1="${f1(Y(A.M))}" y2="${f1(Y(A.M))}" stroke-dasharray="4 3" style="stroke:var(--mut)"/>`+tx(W-P,f1(Y(A.M)-3),'end',L('median','медиана')+' '+A.M)+tx(P,9,'start',mx)+tx(P,H-3,'start',L('older','раньше'))+tx(W-P,H-3,'end',L('newer','новее'));
+  $('vidchart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${L('Views per video, oldest to newest','Просмотры по видео, от старых к новым')}">${g}</svg>`;
+  $('vidnote').textContent=L(['Looks healthy.','Worth watching.','Possible reach restriction.'][A.flag],['Выглядит нормально.','Стоит понаблюдать.','Возможно, ограничен охват.'][A.flag])+' '+A.notes.join(' ')+' '+L('A heuristic from public view counts, not a TikTok verdict.','Эвристика по публичным просмотрам, а не вердикт TikTok.');
+}
+const LSK='ttc-hist-v1';
+const lsRead=()=>{try{return JSON.parse(localStorage.getItem(LSK)||'[]')}catch(e){return[]}};
+const lsWrite=()=>{try{localStorage.setItem(LSK,JSON.stringify(HIST))}catch(e){}};
+const lastSn=a=>a.snaps[a.snaps.length-1];
+const parseV=t=>(t?String(t).split(',').map(r=>r.split(':').map(Number)):[]).map(r=>({t:r[0]*1000,views:r[1],pin:r[2]}));
+async function stInit(){
+  HIST=lsRead();drawCards();
+  try{
+    if(typeof claude==='undefined')return;
+    const db=await claude.use('db'),user=await claude.use('user');
+    if(!db||!user)return;
+    const id=await user.id();if(!id)return;
+    const col=db.collection('data/users/'+id),snap=await col.get();
+    const cloud=snap.docs.map(d=>d.data()).filter(a=>a&&a.slug&&a.snaps);
+    lsRead().forEach(a=>{if(!cloud.find(c=>c.slug===a.slug)){cloud.push(a);col.doc('acct-'+a.slug).set(a).catch(()=>{})}});
+    ST={mode:'cloud',col};HIST=cloud;lsWrite();drawCards();
+  }catch(e){}
+}
+async function stSave(a){
+  if(ST.mode==='cloud'){try{await ST.col.doc('acct-'+a.slug).set(a)}catch(e){ST={mode:'local'}}}
+  lsWrite();
+}
+async function saveSnap(){
+  const h=(($('link').value.match(/@([\w.]+)/)||[])[1]||'').toLowerCase();
+  if(!h){$('saveMsg').textContent=L('Add the account link first.','Сначала добавьте ссылку на аккаунт.');return}
+  const s=read(),c=calc(s),slug=h.replace(/[^a-z0-9_]/g,'-'),r2=x=>Math.round(x*100)/100;
+  const snap={t:Date.now(),sc:Math.round(c.total*10)/10,f:Object.fromEntries(Object.keys(c.f).map(k=>[k,r2(c.f[k])])),
+    in:{age:s.age,posts:s.posts,a14:s.a14,fol:s.fol,fing:s.fing,views:s.views,likes:s.likes,std:s.std,p:s.prof,flag:s.flag},
+    v:VID.filter(x=>x.views!=null).slice(0,30).map(x=>Math.round((x.t||0)/1000)+':'+x.views+':'+(x.pin?1:0)).join(',')};
+  let a=HIST.find(x=>x.slug===slug);
+  if(!a){a={slug,handle:h,snaps:[]};HIST.push(a)}
+  const l=a.snaps[a.snaps.length-1];
+  if(l&&new Date(l.t).toDateString()===new Date(snap.t).toDateString())a.snaps[a.snaps.length-1]=snap;else a.snaps.push(snap);
+  a.snaps=a.snaps.slice(-60);
+  await stSave(a);drawCards();
+  $('saveMsg').textContent=L(`Saved for @${h}.`,`Сохранено для @${h}.`);
+}
+function spark(v){
+  const W=130,H=36,P=5,X=i=>v.length===1?W/2:P+(W-2*P)*i/(v.length-1),Y=s=>H-P-(H-2*P)*s/100,e=v.length-1;
+  const pts=v.map((s,i)=>X(i).toFixed(1)+','+Y(s).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="36" role="img" aria-label="${L('Score trend','Динамика оценки')}">${e?`<polyline points="${pts}" fill="none" stroke-width="1.5" style="stroke:var(--mut)"/>`:''}<circle cx="${X(e).toFixed(1)}" cy="${Y(v[e]).toFixed(1)}" r="3.5" style="fill:var(${col(v[e])[3]})"/></svg>`;
+}
+function drawCards(){
+  const list=[...HIST].filter(a=>a.snaps&&a.snaps.length).sort((a,b)=>lastSn(b).sc-lastSn(a).sc);
+  $('cards').innerHTML=list.map(a=>{
+    const n=lastSn(a),pr=a.snaps[a.snaps.length-2],z=col(n.sc),d=pr?n.sc-pr.sc:null;
+    const dl=d==null?L('first check','первая проверка'):Math.abs(d)<.05?'= 0':(d>0?'▲ +':'▼ −')+num(Math.abs(d),1);
+    const mini=Object.keys(FN).map(k=>`<span title="${L(FN[k][0],FN[k][1])} ${Math.round((n.f[k]||0)*100)}%" style="height:${Math.max(4,(n.f[k]||0)*100)}%;background:var(${col((n.f[k]||0)*100)[3]})"></span>`).join('');
+    const fl=n.in&&n.in.flag?`<div class="cn">⚠ ${L(n.in.flag===2?'Reach pattern flagged':'Reach worth watching',n.in.flag===2?'Подозрение на ограничение охвата':'Охват стоит понаблюдать')}</div>`:'';
+    return `<div class="card"><div class="ch"><b>@${esc(a.handle)}</b><span>${new Date(n.t).toLocaleDateString(L('en-GB','ru-RU'),{day:'numeric',month:'short'})}</span></div>
+<div class="cs"><span class="cp" style="color:var(${z[3]})">${fmt(n.sc)}%</span><span>${zname(z)}</span><span class="cn">${dl}</span></div>
+${spark(a.snaps.slice(-20).map(x=>x.sc))}<div class="mini">${mini}</div>${fl}
+<div class="cb"><button type="button" data-a="open" data-s="${esc(a.slug)}">${L('Open','Открыть')}</button><button type="button" class="alt" data-a="del" data-s="${esc(a.slug)}">${L('Delete','Удалить')}</button></div></div>`}).join('')||`<p class="hint">${L('No saved accounts yet. Import a profile, set the manual fields, then press "Save to history".','Пока нет сохранённых аккаунтов. Импортируйте профиль, задайте ручные поля и нажмите «Сохранить в историю».')}</p>`;
+  $('histNote').textContent=ST.mode==='cloud'?L('Synced to your account, so phone and computer show the same history.','Синхронизируется через ваш аккаунт: на телефоне и компьютере одна и та же история.'):L('Saved on this device only; sign-in sync is not available here.','Сохранено только на этом устройстве; синхронизация через аккаунт здесь недоступна.');
+}
+function openAcc(slug){
+  const a=HIST.find(x=>x.slug===slug);if(!a)return;
+  const n=lastSn(a),i=n.in,m={avatar:'p_avatar',bio:'p_bio',name:'p_name',contact:'p_contact',handle:'p_handle'};
+  ['age','posts','a14','fol','fing','views','likes'].forEach(k=>{$(k).value=i[k]});
+  $('std').value=i.std;for(const k in m)$(m[k]).checked=!!(i.p&&i.p[k]);
+  $('link').value='https://www.tiktok.com/@'+a.handle;impHandle=a.handle;handleTouched=true;
+  VID=parseV(n.v);parseLink();render();$('result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function delAcc(slug){
+  HIST=HIST.filter(a=>a.slug!==slug);
+  if(ST.mode==='cloud'){try{await ST.col.doc('acct-'+slug).delete()}catch(e){}}
+  lsWrite();drawCards();
+}
+$('save').addEventListener('click',saveSnap);
+$('cards').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]');if(!b)return;const sl=b.dataset.s;
+  if(b.dataset.a==='open')openAcc(sl);
+  else if(b.dataset.arm)delAcc(sl);
+  else{b.dataset.arm='1';b.textContent=L('Tap again to delete','Нажмите ещё раз для удаления');setTimeout(drawCards,3000)}
+});
+const RU={"Inside Telegram the bookmark cannot run. Use it in your regular browser (Chrome or Safari), copy the result, then paste it here.": "Внутри Telegram закладка не работает. Запустите её в обычном браузере (Chrome или Safari), скопируйте результат и вставьте сюда.","Recent video views": "Просмотры недавних видео", "Use this pattern in the standing score": "Учитывать эту картину в статусе аккаунта", "Save to history": "Сохранить в историю", "Your accounts": "Ваши аккаунты","Import from your profile": "Импорт из вашего профиля", "Reads the public numbers from a profile page you have open in a desktop browser, so you do not have to type them in.": "Считывает публичные цифры со страницы профиля, открытой в браузере на компьютере, чтобы не вводить их вручную.", "Drag this to your bookmarks bar, or copy its code:": "Перетащите эту кнопку на панель закладок или скопируйте её код:", "Read TikTok profile": "Прочитать профиль TikTok", "Copy code": "Копировать код", "Open your profile on tiktok.com and click the bookmark.": "Откройте свой профиль на tiktok.com и нажмите закладку.", "Paste the result below and import.": "Вставьте результат ниже и импортируйте.", "Import numbers": "Импортировать цифры","TikTok trust check": "Проверка траста TikTok", "Paste an account link, add the numbers visible on its profile, and get a trust score, a warm-up status, and a projection of how many days of warming up are left.": "Вставьте ссылку на аккаунт, добавьте цифры, которые видны в его профиле, и получите оценку траста, статус прогрева и прогноз, сколько дней прогрева ещё осталось.", "Account link": "Ссылка на аккаунт", "Analyze": "Анализировать", "TikTok blocks automated reads from a web page, so the link supplies the username and the profile numbers below are entered by hand.": "TikTok не даёт автоматически читать данные со страницы, поэтому ссылка нужна только для имени пользователя, а цифры профиля ниже вводятся вручную.", "Profile numbers": "Цифры профиля", "Account age (days)": "Возраст аккаунта (дни)", "Videos posted (total)": "Опубликовано видео (всего)", "Days posted in last 14": "Дней с публикациями за последние 14", "Followers": "Подписчики", "Following": "Подписки", "Avg views, last 10 videos": "Средние просмотры, последние 10 видео", "Avg likes, last 10 videos": "Средние лайки, последние 10 видео", "Account standing": "Статус аккаунта", "Clean, no issues": "Чистый, без проблем", "1–2 videos removed": "Удалено 1–2 видео", "Warnings or strikes": "Предупреждения или страйки", "Features restricted / not eligible for For You": "Функции ограничены / видео не попадают в рекомендации", "Profile setup": "Оформление профиля", "Real profile photo": "Настоящее фото профиля", "Bio filled in": "Заполнено описание профиля", "Custom display name": "Своё отображаемое имя", "Phone or email verified": "Телефон или почта подтверждены", "Chosen username (not an auto-generated one)": "Выбранный username (не сгенерированный автоматически)", "Goal": "Цель", "Warm-up target": "Целевой уровень прогрева", "55% – usable, still building": "55% – можно использовать, прогрев продолжается", "75% – fully warmed": "75% – полностью прогрет", "85% – high trust": "85% – высокий траст", "What the score is made of": "Из чего складывается оценка", "Do next, biggest gain first": "Что делать дальше, сначала самое выгодное"};
+function applyStatic(){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+  while(n=w.nextNode()){
+    if(n.__en===undefined){const k=n.nodeValue.trim();if(!RU.hasOwnProperty(k))continue;n.__en=n.nodeValue;n.__k=k;}
+    n.nodeValue=lang==='ru'?n.__en.replace(n.__k,RU[n.__k]):n.__en;
+  }
+}
+function setLang(l){
+  lang=l;try{localStorage.setItem('ttc-lang',l)}catch(e){}
+  document.documentElement.lang=l;
+  document.title=L('TikTok Trust Check','Проверка траста TikTok');
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));
+  applyStatic();$('bm').setAttribute('href',bookmarkUrl());parseLink();render();drawCards();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.l)));
+try{const sv=localStorage.getItem('ttc-lang');if(sv==='ru'||sv==='en')lang=sv;}catch(e){}
+setLang(lang);
+stInit();
+if(TG)$('tgNote').hidden=false;
+</script>
+</body>
+</html>
